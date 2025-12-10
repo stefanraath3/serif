@@ -103,28 +103,6 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
 
       const triggerRender = () => {
         forceUpdate((x) => x + 1);
-        // #region agent log
-        fetch(
-          "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              location: "tiptap-editor.tsx:selection-update",
-              message: "Selection/transaction update",
-              data: {
-                isBoldActive: editor.isActive("bold"),
-                isItalicActive: editor.isActive("italic"),
-                isH2Active: editor.isActive("heading", { level: 2 }),
-                isH3Active: editor.isActive("heading", { level: 3 }),
-              },
-              timestamp: Date.now(),
-              sessionId: "debug-session",
-              hypothesisId: "H1",
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
       };
 
       editor.on("selectionUpdate", triggerRender);
@@ -192,25 +170,6 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
     if (!editor) {
       return null;
     }
-    // #region agent log
-    fetch("http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "tiptap-editor.tsx:render",
-        message: "Component rendering",
-        data: {
-          isBoldActive: editor.isActive("bold"),
-          isItalicActive: editor.isActive("italic"),
-          isH2Active: editor.isActive("heading", { level: 2 }),
-          isH3Active: editor.isActive("heading", { level: 3 }),
-        },
-        timestamp: Date.now(),
-        sessionId: "debug-session",
-        hypothesisId: "H1",
-      }),
-    }).catch(() => {});
-    // #endregion
 
     return (
       <div className={cn("relative group", className)}>
@@ -231,26 +190,9 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               size="icon"
               className="h-8 w-8 rounded-full"
               onClick={() => {
-                // #region agent log
                 const isActiveBefore = editor.isActive("bold");
                 const result = editor.chain().focus().toggleBold().run();
                 const isActiveAfter = editor.isActive("bold");
-                fetch(
-                  "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      location: "tiptap-editor.tsx:bold-click",
-                      message: "Bold button clicked",
-                      data: { isActiveBefore, result, isActiveAfter },
-                      timestamp: Date.now(),
-                      sessionId: "debug-session",
-                      hypothesisId: "H1,H2",
-                    }),
-                  }
-                ).catch(() => {});
-                // #endregion
               }}
             >
               <Bold className="h-4 w-4" />
@@ -275,7 +217,6 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               size="sm"
               className="h-8 px-2.5 rounded-full font-serif"
               onClick={() => {
-                // #region agent log
                 const isActiveBefore = editor.isActive("heading", { level: 2 });
                 const result = editor
                   .chain()
@@ -284,27 +225,6 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
                   .run();
                 const isActiveAfter = editor.isActive("heading", { level: 2 });
                 const htmlAfter = editor.getHTML();
-                fetch(
-                  "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      location: "tiptap-editor.tsx:h2-click",
-                      message: "H2 button clicked",
-                      data: {
-                        isActiveBefore,
-                        result,
-                        isActiveAfter,
-                        htmlAfter,
-                      },
-                      timestamp: Date.now(),
-                      sessionId: "debug-session",
-                      hypothesisId: "H3,H4",
-                    }),
-                  }
-                ).catch(() => {});
-                // #endregion
               }}
             >
               H2
@@ -317,7 +237,6 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               size="sm"
               className="h-8 px-2.5 rounded-full font-serif"
               onClick={() => {
-                // #region agent log
                 const isActiveBefore = editor.isActive("heading", { level: 3 });
                 const result = editor
                   .chain()
@@ -326,27 +245,6 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
                   .run();
                 const isActiveAfter = editor.isActive("heading", { level: 3 });
                 const htmlAfter = editor.getHTML();
-                fetch(
-                  "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      location: "tiptap-editor.tsx:h3-click",
-                      message: "H3 button clicked",
-                      data: {
-                        isActiveBefore,
-                        result,
-                        isActiveAfter,
-                        htmlAfter,
-                      },
-                      timestamp: Date.now(),
-                      sessionId: "debug-session",
-                      hypothesisId: "H3,H4",
-                    }),
-                  }
-                ).catch(() => {});
-                // #endregion
               }}
             >
               H3
