@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Sidebar,
@@ -48,9 +49,13 @@ export function AppSidebar({ profile, email }: AppSidebarProps) {
           href="/dashboard"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-primary-foreground">
-            <span className="font-serif font-bold text-sm">S</span>
-          </div>
+          <Image
+            src="/logo.svg"
+            alt="Serif Logo"
+            width={24}
+            height={24}
+            className="transition-opacity"
+          />
           <span className="font-serif font-medium tracking-tight">Serif</span>
         </Link>
       </SidebarHeader>

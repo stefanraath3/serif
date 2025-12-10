@@ -85,20 +85,11 @@ export function LoginForm({
           )}
           <Button
             type="submit"
-            className="w-full h-11 rounded-full bg-stone-900 text-stone-50 hover:bg-stone-800 mt-2"
+            className="w-full h-12 rounded-full bg-stone-900 text-stone-50 hover:bg-stone-800 text-base mt-2"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
-        </div>
-        <div className="mt-6 text-center text-sm text-stone-600">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/auth/sign-up"
-            className="text-stone-900 font-medium hover:underline underline-offset-4"
-          >
-            Sign up
-          </Link>
         </div>
       </form>
     </div>
