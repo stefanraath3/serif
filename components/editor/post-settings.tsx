@@ -60,65 +60,76 @@ export function PostSettings({
           <span className="sr-only">Settings</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="font-serif text-2xl">Post Settings</SheetTitle>
-          <SheetDescription>
-            Configure metadata, SEO, and publishing details for your story.
+      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto p-0 border-l border-border/40 bg-background/95 backdrop-blur-md">
+        <SheetHeader className="px-8 pt-8 pb-4 border-b border-border/40">
+          <SheetTitle className="font-serif text-3xl font-medium tracking-tight">
+            Post Settings
+          </SheetTitle>
+          <SheetDescription className="text-base font-light">
+            Configure metadata and publishing details.
           </SheetDescription>
         </SheetHeader>
 
-        <div className="grid gap-8 py-8">
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+        <div className="grid gap-10 px-8 py-8">
+          <div className="space-y-6">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
               General
             </h3>
 
-            <div className="space-y-2">
-              <Label htmlFor="slug">URL Slug</Label>
+            <div className="space-y-3">
+              <Label htmlFor="slug" className="text-sm font-medium">
+                URL Slug
+              </Label>
               <Input
                 id="slug"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="my-awesome-post"
+                className="bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground font-light">
                 The URL-friendly version of the title.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="summary">Summary</Label>
+            <div className="space-y-3">
+              <Label htmlFor="summary" className="text-sm font-medium">
+                Summary
+              </Label>
               <Textarea
                 id="summary"
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="A brief description of your post..."
                 rows={4}
-                className="resize-none"
+                className="resize-none bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground font-light">
                 Appears in search results and social media previews.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label>Cover Image</Label>
-              <ImageUpload
-                value={image}
-                onChange={setImage}
-                label="Cover Image"
-              />
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Cover Image</Label>
+              <div className="rounded-xl overflow-hidden border border-border/50 bg-muted/10">
+                <ImageUpload
+                  value={image}
+                  onChange={setImage}
+                  label="Cover Image"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="space-y-6 pt-4 border-t border-border/40">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
               Publishing
             </h3>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+            <div className="space-y-3">
+              <Label htmlFor="status" className="text-sm font-medium">
+                Status
+              </Label>
               <Select
                 value={status}
                 onValueChange={(value) => {
@@ -128,7 +139,10 @@ export function PostSettings({
                   }
                 }}
               >
-                <SelectTrigger id="status">
+                <SelectTrigger
+                  id="status"
+                  className="bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,20 +154,25 @@ export function PostSettings({
             </div>
 
             {status === "scheduled" && (
-              <div className="space-y-2">
-                <Label htmlFor="scheduled-at">Scheduled Date & Time</Label>
+              <div className="space-y-3">
+                <Label htmlFor="scheduled-at" className="text-sm font-medium">
+                  Scheduled Date & Time
+                </Label>
                 <Input
                   id="scheduled-at"
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
                   required={status === "scheduled"}
+                  className="bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
                 />
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="read-time">Read Time (minutes)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="read-time" className="text-sm font-medium">
+                Read Time (minutes)
+              </Label>
               <Input
                 id="read-time"
                 type="number"
@@ -161,6 +180,7 @@ export function PostSettings({
                 value={readTime}
                 onChange={(e) => setReadTime(e.target.value)}
                 placeholder="5"
+                className="bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
               />
             </div>
           </div>
