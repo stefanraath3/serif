@@ -1,0 +1,241 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { mockPosts } from "@/lib/data/mock-posts";
+import type { PostStatus } from "@/lib/types";
+
+export default function EditPostPage() {
+  const router = useRouter();
+  const params = useParams();
+  const postId = params.id as string;
+
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [content, setContent] = useState("");
+  const [status, setStatus] = useState<PostStatus>("draft");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // For now, use mock data. Later replace with actual Supabase query:
+    // const supabase = createClient()
+    // const { data: authData } = await supabase.auth.getUser()
+    // if (!authData.user) {
+    //   router.push('/auth/login')
+    //   return
+    // }
+    //
+    // const { data: post, error: fetchError } = await supabase
+    //   .from('posts')
+    //   .select('*')
+    //   .eq('id', postId)
+    //   .eq('user_id', authData.user.id)
+    //   .single()
+    //
+    // if (fetchError || !post) {
+    //   setError('Post not found')
+    //   setIsLoading(false)
+    //   return
+    // }
+
+    const post = mockPosts.find((p) => p.id === postId);
+    if (post) {
+      setTitle(post.title);
+      setSlug(post.slug);
+      setContent(post.content || "");
+      setStatus(post.status);
+    } else {
+      setError("Post not found");
+    }
+    setIsLoading(false);
+  }, [postId, router]);
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim();
+  };
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    if (!slug || slug === generateSlug(title)) {
+      setSlug(generateSlug(value));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    const supabase = createClient();
+
+    // For now, just redirect. Later replace with actual Supabase update:
+    // const { data: authData } = await supabase.auth.getUser()
+    // if (!authData.user) {
+    //   setError('You must be logged in to update a post')
+    //   setIsSubmitting(false)
+    //   return
+    // }
+    //
+    // const { error: updateError } = await supabase
+    //   .from('posts')
+    //   .update({
+    //     title,
+    //     slug,
+    //     content,
+    //     status,
+    //   })
+    //   .eq('id', postId)
+    //   .eq('user_id', authData.user.id)
+    //
+    // if (updateError) {
+    //   setError(updateError.message)
+    //   setIsSubmitting(false)
+    //   return
+    // }
+
+    router.push("/dashboard/blogs");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (error && !title) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <p className="text-destructive">{error}</p>
+        <Button asChild>
+          <Link href="/dashboard/blogs">Back to Posts</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col gap-6">
+      <div className="flex items-center gap-4">
+        <Button asChild variant="ghost" size="icon">
+          <Link href="/dashboard/blogs">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Post</h1>
+          <p className="text-muted-foreground mt-1">Update your blog post</p>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Post Details</CardTitle>
+          <CardDescription>
+            Update the details for your blog post
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Enter post title"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="slug">Slug</Label>
+              <Input
+                id="slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="post-slug"
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                URL-friendly version of the title
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write your post content here..."
+                rows={10}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={status}
+                onValueChange={(value) => setStatus(value as PostStatus)}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <div className="flex items-center gap-4">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Updating..." : "Update Post"}
+              </Button>
+              <Button type="button" variant="outline" asChild>
+                <Link href="/dashboard/blogs">Cancel</Link>
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
