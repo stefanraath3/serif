@@ -48,7 +48,7 @@ export default function Page() {
                     alt="Ernest Hemingway"
                     width={48}
                     height={48}
-                    className="rounded-full object-cover"
+                    className="w-12 h-12 rounded-full object-cover"
                   />
                   <div>
                     <p className="font-medium text-stone-900">
