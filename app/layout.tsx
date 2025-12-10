@@ -18,8 +18,26 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Serif | Clarity of Mind",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://serif.com"
+  ),
+  title: {
+    default: "Serif | Clarity of Mind",
+    template: "%s | Serif",
+  },
   description: "A beautiful and award winning blog platform.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Serif",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

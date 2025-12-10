@@ -41,19 +41,17 @@ export async function updateSession(request: NextRequest) {
 
   const user = data?.claims;
 
-  // Protect dashboard routes - redirect to login if not authenticated
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
-  }
+  // Public routes that don't require authentication
+  const publicRoutes = ["/", "/blog", "/about", "/auth", "/login"];
 
-  // Redirect unauthenticated users to login (except auth pages)
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
+  const isPublicRoute = publicRoutes.some(
+    (route) =>
+      request.nextUrl.pathname === route ||
+      request.nextUrl.pathname.startsWith(`${route}/`)
+  );
+
+  // Protect non-public routes - redirect to login if not authenticated
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
