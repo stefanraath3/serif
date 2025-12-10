@@ -205,3 +205,4 @@ pnpm dev
 - **Post Scheduling**: Database-level scheduled publishing support
 - **SEO**: Dynamic sitemap and robots.txt generation
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
+# serif
