@@ -164,7 +164,7 @@ export default function NewPostPage() {
     }
 
     toast.success("Post created successfully");
-    router.push("/dashboard/blogs");
+    router.push(`/dashboard/blogs/${result.data.id}`);
   };
 
   return (

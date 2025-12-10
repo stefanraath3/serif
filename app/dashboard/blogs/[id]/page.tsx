@@ -187,7 +187,6 @@ export default function EditPostPage() {
 
     toast.success("Post updated successfully");
     setIsSubmitting(false);
-    router.push("/dashboard/blogs");
   };
 
   if (isLoading) {
