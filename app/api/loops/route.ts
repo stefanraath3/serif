@@ -8,6 +8,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
+    const internalSecret = process.env.INTERNAL_API_SECRET;
+    const headerSecret = request.headers.get("x-internal-auth");
+
+    if (!internalSecret) {
+      console.error("INTERNAL_API_SECRET is not set");
+      return NextResponse.json(
+        { error: "Internal API secret not configured" },
+        { status: 500 }
+      );
+    }
+
+    if (headerSecret !== internalSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const loopsApiKey = process.env.LOOPS_API_KEY;
     if (!loopsApiKey) {
       console.error("LOOPS_API_KEY is not set");

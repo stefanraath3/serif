@@ -42,13 +42,16 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/", "/blog", "/about", "/auth", "/login", "/api"];
+  const publicPageRoutes = ["/", "/blog", "/about", "/auth", "/login"];
+  const publicApiRoutes = ["/api/loops"];
 
-  const isPublicRoute = publicRoutes.some(
-    (route) =>
-      request.nextUrl.pathname === route ||
-      request.nextUrl.pathname.startsWith(`${route}/`)
-  );
+  const path = request.nextUrl.pathname;
+
+  const isPublicRoute =
+    publicPageRoutes.some(
+      (route) => path === route || path.startsWith(`${route}/`)
+    ) ||
+    publicApiRoutes.some((route) => path === route || path.startsWith(route));
 
   // Protect non-public routes - redirect to login if not authenticated
   if (!user && !isPublicRoute) {
