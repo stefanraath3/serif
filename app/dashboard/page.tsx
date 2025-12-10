@@ -1,14 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus, FileText, Settings } from "lucide-react";
+import { Plus, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -30,118 +24,99 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(3);
 
   const recentPosts = posts || [];
-  const displayName = profile?.first_name || email?.split("@")[0] || "there";
+  const firstName = profile?.first_name || "Writer";
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {displayName}!
+    <div className="flex flex-1 flex-col gap-12 max-w-2xl mx-auto w-full pt-12 animate-in fade-in duration-700">
+      {/* 1. The Greeting & Quick Capture */}
+      <section className="space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground/90">
+            Good morning, {firstName}.
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your blog posts and settings from here.
+          <p className="text-muted-foreground font-light text-lg">
+            What is on your mind today?
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/blogs/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Post
+
+        {/* Quick Capture Input - Acts as a button to new post */}
+        <Link href="/dashboard/blogs/new" className="block group">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Plus className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary/70 transition-colors" />
+            </div>
+            <div className="h-14 w-full rounded-xl border border-stone-200 bg-white pl-12 pr-4 flex items-center text-muted-foreground/60 shadow-sm transition-all group-hover:border-stone-300 group-hover:shadow-md dark:border-stone-800 dark:bg-stone-900/50">
+              <span className="font-serif italic text-lg">
+                Start a new story...
+              </span>
+            </div>
+          </div>
+        </Link>
+      </section>
+
+      {/* 2. Recent Work - The Desk Surface */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Recent Work
+          </h2>
+          <Link
+            href="/dashboard/blogs"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group"
+          >
+            View all{" "}
+            <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
           </Link>
-        </Button>
-      </div>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Posts</CardTitle>
-            <CardDescription>Your latest blog posts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentPosts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground mb-4">
-                  No posts yet
-                </p>
-                <Button asChild size="sm">
-                  <Link href="/dashboard/blogs/new">
-                    Create your first post
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex items-start justify-between gap-4 border-b pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="flex-1 space-y-1">
-                      <Link
-                        href={`/dashboard/blogs/${post.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {post.title}
-                      </Link>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {post.summary || "No summary"}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs ${
-                            post.status === "published"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-                          }`}
-                        >
-                          {post.status}
-                        </span>
-                        <span>
-                          {new Date(post.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
+        <div className="grid gap-3">
+          {recentPosts.length === 0 ? (
+            <div className="py-12 text-center rounded-xl border border-dashed border-stone-200 dark:border-stone-800">
+              <p className="text-muted-foreground font-light">
+                Your desk is clear.
+              </p>
+            </div>
+          ) : (
+            recentPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/dashboard/blogs/${post.id}`}
+                className="group block p-5 rounded-xl bg-white border border-stone-100 shadow-sm hover:shadow-md hover:border-stone-200 transition-all dark:bg-stone-900/40 dark:border-stone-800 dark:hover:border-stone-700"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1.5">
+                    <h3 className="font-serif text-xl font-medium text-foreground/90 group-hover:text-primary transition-colors">
+                      {post.title || "Untitled Draft"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-1 font-light">
+                      {post.summary || "No summary..."}
+                    </p>
                   </div>
-                ))}
-                <Button asChild variant="outline" className="w-full mt-4">
-                  <Link href="/dashboard/blogs">View all posts</Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/dashboard/blogs/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Post
+                  {post.status === "published" && (
+                    <div
+                      className="h-2 w-2 rounded-full bg-green-500/50 mt-2"
+                      title="Published"
+                    />
+                  )}
+                </div>
+                <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground/60 font-mono">
+                  <span>
+                    {new Date(post.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                  {post.read_time && <span>• {post.read_time} min read</span>}
+                </div>
               </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/dashboard/blogs">
-                <FileText className="mr-2 h-4 w-4" />
-                Manage Posts
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/dashboard/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }

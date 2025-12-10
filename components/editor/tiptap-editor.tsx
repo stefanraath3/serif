@@ -138,7 +138,7 @@ export function TipTapEditor({
       />
 
       {/* Floating Toolbar - appears on selection or hover near top */}
-      <div className="sticky top-20 z-10 mx-auto mb-8 w-fit overflow-hidden rounded-full border bg-background/95 p-1 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+      <div className="sticky top-20 z-10 mx-auto mb-8 w-fit overflow-hidden rounded-full border bg-background/95 p-1 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60 transition-all opacity-0 group-hover:opacity-100 focus-within:opacity-100">
         <div className="flex items-center gap-0.5">
           <Button
             type="button"

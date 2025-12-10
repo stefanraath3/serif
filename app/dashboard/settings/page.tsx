@@ -5,17 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { uploadAvatar } from "@/lib/upload";
-import { Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -130,114 +123,109 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="flex flex-1 items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your profile settings
+    <div className="max-w-xl mx-auto w-full pt-12 animate-in fade-in duration-500">
+      <div className="mb-12">
+        <h1 className="text-3xl font-serif font-medium tracking-tight">
+          Settings
+        </h1>
+        <p className="text-muted-foreground mt-2 font-light text-lg">
+          Manage your profile and account.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Update your profile information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-center gap-6">
-              <div className="relative group">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage
-                    src={avatarUrl || undefined}
-                    alt={firstName || email}
-                  />
-                  <AvatarFallback className="text-lg">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => avatarInputRef.current?.click()}
-                  disabled={isUploadingAvatar}
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                  disabled={isUploadingAvatar}
-                />
-              </div>
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="avatar-url">Avatar</Label>
-                <Input
-                  id="avatar-url"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  type="url"
-                  disabled={isUploadingAvatar}
-                />
-                <p className="text-sm text-muted-foreground">
-                  {isUploadingAvatar
-                    ? "Uploading..."
-                    : "Upload an image or enter a URL to your avatar"}
-                </p>
-              </div>
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-12">
+        {/* Profile Section */}
+        <section className="space-y-6">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider border-b pb-2">
+            Profile
+          </h2>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" value={email} disabled className="bg-muted" />
-              <p className="text-sm text-muted-foreground">
-                Email cannot be changed from here
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="first-name">First Name</Label>
-              <Input
-                id="first-name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Enter your first name"
+          <div className="flex items-start gap-8">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => avatarInputRef.current?.click()}
+            >
+              <Avatar className="h-24 w-24 ring-2 ring-offset-2 ring-transparent group-hover:ring-stone-200 transition-all dark:group-hover:ring-stone-800">
+                <AvatarImage
+                  src={avatarUrl || undefined}
+                  alt={firstName || email}
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-xl bg-stone-100 dark:bg-stone-800">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                {isUploadingAvatar ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Upload className="h-5 w-5" />
+                )}
+              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+                disabled={isUploadingAvatar}
               />
             </div>
 
-            {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
+            <div className="flex-1 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="first-name">First Name</Label>
+                <Input
+                  id="first-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="max-w-sm bg-transparent border-stone-200 focus:border-stone-400 dark:border-stone-800 dark:focus:border-stone-700"
+                />
               </div>
-            )}
 
-            {success && (
-              <div className="rounded-md bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400">
-                Profile updated successfully!
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  value={email}
+                  disabled
+                  className="max-w-sm bg-stone-50/50 text-muted-foreground border-transparent dark:bg-stone-900/50"
+                />
               </div>
-            )}
-
-            <div className="flex items-center gap-4">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+        </section>
+
+        {error && (
+          <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/10 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="rounded-lg bg-green-50 p-4 text-sm text-green-600 dark:bg-green-900/10 dark:text-green-400">
+            Profile updated successfully.
+          </div>
+        )}
+
+        <div className="pt-6 border-t border-stone-100 dark:border-stone-800">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-full px-8"
+          >
+            {isSubmitting ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
