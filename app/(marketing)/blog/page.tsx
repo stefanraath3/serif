@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { BlogCard } from "@/components/blog/blog-card";
+import type { PublicPost } from "@/lib/types";
 
 export default async function BlogPage() {
   const supabase = await createClient();
 
   const { data: posts } = await supabase
-    .from("posts")
+    .from("public_posts")
     .select("*")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .returns<PublicPost[]>();
 
   if (!posts || posts.length === 0) {
     return (
@@ -47,8 +48,8 @@ export default async function BlogPage() {
               title={post.title}
               summary={post.summary}
               image={post.image}
-              authorName={post.author || "Anonymous"}
-              authorAvatar={null}
+              authorName={post.author_name}
+              authorAvatar={post.author_avatar}
               createdAt={post.created_at}
               readTime={post.read_time}
             />

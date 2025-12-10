@@ -69,14 +69,12 @@ export function BlogCard({
 
         <div className="flex items-center gap-3 mt-auto pt-2 text-xs text-stone-500">
           <div className="flex items-center gap-2">
-            {authorAvatar && (
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={authorAvatar} alt={authorName} />
-                <AvatarFallback className="text-[10px] bg-stone-200 text-stone-600">
-                  {authorInitials}
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={authorAvatar || ""} alt={authorName} />
+              <AvatarFallback className="text-[10px] bg-stone-200 text-stone-600">
+                {authorInitials}
+              </AvatarFallback>
+            </Avatar>
             <span className="font-medium">{authorName}</span>
           </div>
           <span>•</span>

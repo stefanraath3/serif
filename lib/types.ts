@@ -34,3 +34,17 @@ export interface PostFormData {
   status: PostStatus;
   scheduled_at: string | null;
 }
+
+// Public-facing post from the public_posts view (no user_id exposed)
+export interface PublicPost {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string | null;
+  body: string | null;
+  image: string | null;
+  read_time: number | null;
+  created_at: string;
+  author_name: string;
+  author_avatar: string | null;
+}

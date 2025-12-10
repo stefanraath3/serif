@@ -19,7 +19,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { uploadImage } from "@/lib/upload";
-import { useRef, forwardRef, useImperativeHandle } from "react";
+import { useRef, forwardRef, useImperativeHandle, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface TipTapEditorRef {
@@ -44,6 +44,9 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
     ref
   ) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // #region agent log - force re-render state
+    const [, forceRender] = useState(0);
+    // #endregion
 
     const editor = useEditor({
       immediatelyRender: false,
@@ -72,6 +75,26 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
       content,
       onUpdate: ({ editor }) => {
         onChange(editor.getHTML());
+      },
+      // Fix: Force re-render on selection/storedMarks changes for toolbar state
+      onSelectionUpdate: () => {
+        forceRender((n) => n + 1);
+        // #region agent log
+        fetch(
+          "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "tiptap-editor.tsx:onSelectionUpdate",
+              message: "Selection updated - forcing re-render",
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              runId: "post-fix",
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
       },
       editorProps: {
         attributes: {

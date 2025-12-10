@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { PublicPost } from "@/lib/types";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -15,10 +16,9 @@ export async function generateMetadata({
   const supabase = await createClient();
 
   const { data: post } = await supabase
-    .from("posts")
+    .from("public_posts")
     .select("title, summary, image")
     .eq("slug", slug)
-    .eq("status", "published")
     .single();
 
   if (!post) {
@@ -43,19 +43,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const supabase = await createClient();
 
   const { data: post, error } = await supabase
-    .from("posts")
+    .from("public_posts")
     .select("*")
     .eq("slug", slug)
-    .eq("status", "published")
-    .single();
+    .single<PublicPost>();
 
   if (error || !post) {
     notFound();
   }
 
-  const authorName = post.author || "Anonymous";
-  const authorAvatar: string | null = null;
-  const authorInitials = authorName
+  const authorInitials = post.author_name
     .split(" ")
     .map((n: string) => n[0])
     .join("")
@@ -84,15 +81,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
           <div className="flex items-center gap-4 text-sm text-stone-600 mb-8">
             <div className="flex items-center gap-2">
-              {authorAvatar && (
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={authorAvatar} alt={authorName} />
-                  <AvatarFallback className="text-xs bg-stone-200 text-stone-700">
-                    {authorInitials}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <span className="font-medium">{authorName}</span>
+              <Avatar className="h-8 w-8">
+                <AvatarImage
+                  src={post.author_avatar || ""}
+                  alt={post.author_name}
+                />
+                <AvatarFallback className="text-xs bg-stone-200 text-stone-700">
+                  {authorInitials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-medium">{post.author_name}</span>
             </div>
             <span>•</span>
             <time dateTime={post.created_at} className="text-stone-500">
