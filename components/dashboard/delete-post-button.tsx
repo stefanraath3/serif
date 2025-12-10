@@ -29,17 +29,13 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
     setIsDeleting(true);
     const supabase = createClient();
 
-    // For now, just refresh. Later replace with actual Supabase delete:
-    // const { error } = await supabase
-    //   .from('posts')
-    //   .delete()
-    //   .eq('id', postId)
-    //
-    // if (error) {
-    //   console.error('Error deleting post:', error)
-    //   setIsDeleting(false)
-    //   return
-    // }
+    const { error } = await supabase.from("posts").delete().eq("id", postId);
+
+    if (error) {
+      console.error("Error deleting post:", error);
+      setIsDeleting(false);
+      return;
+    }
 
     router.refresh();
     setIsDeleting(false);

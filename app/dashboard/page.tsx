@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus, FileText, Settings } from "lucide-react";
-import { mockPosts } from "@/lib/data/mock-posts";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -25,15 +24,15 @@ export default async function DashboardPage() {
     .eq("id", userId)
     .single();
 
-  // For now, use mock data. Later replace with actual Supabase query:
-  // const { data: posts } = await supabase
-  //   .from('posts')
-  //   .select('*')
-  //   .eq('user_id', userId)
-  //   .order('created_at', { ascending: false })
-  //   .limit(5)
+  // Fetch recent posts
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(5);
 
-  const recentPosts = mockPosts.slice(0, 3);
+  const recentPosts = posts || [];
   const displayName = profile?.first_name || email?.split("@")[0] || "there";
 
   return (
@@ -89,7 +88,7 @@ export default async function DashboardPage() {
                         {post.title}
                       </Link>
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {post.content || "No content"}
+                        {post.summary || "No summary"}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span

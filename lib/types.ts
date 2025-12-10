@@ -5,7 +5,11 @@ export interface Post {
   user_id: string;
   title: string;
   slug: string;
-  content: string | null;
+  summary: string | null;
+  body: string | null;
+  image: string | null;
+  author: string | null;
+  read_time: number | null;
   status: PostStatus;
   created_at: string;
   updated_at: string;
@@ -22,6 +26,10 @@ export interface Profile {
 export interface PostFormData {
   title: string;
   slug: string;
-  content: string;
+  summary: string;
+  body: string;
+  image: string;
+  author: string;
+  read_time: number | null;
   status: PostStatus;
 }

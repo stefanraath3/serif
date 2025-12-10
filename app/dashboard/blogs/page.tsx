@@ -11,7 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { mockPosts } from "@/lib/data/mock-posts";
 import { DeletePostButton } from "@/components/dashboard/delete-post-button";
 
 export default async function BlogsPage() {
@@ -20,14 +19,12 @@ export default async function BlogsPage() {
   const { data: authData } = await supabase.auth.getClaims();
   const userId = authData?.claims?.sub;
 
-  // For now, use mock data. Later replace with actual Supabase query:
-  // const { data: posts } = await supabase
-  //   .from('posts')
-  //   .select('*')
-  //   .eq('user_id', userId)
-  //   .order('created_at', { ascending: false })
-
-  const posts = mockPosts;
+  // Fetch posts
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
   return (
     <div className="flex flex-1 flex-col gap-6">
@@ -58,7 +55,7 @@ export default async function BlogsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {posts.length === 0 ? (
+            {!posts || posts.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={5}
@@ -68,7 +65,7 @@ export default async function BlogsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              posts.map((post) => (
+              posts!.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">
                     <Link

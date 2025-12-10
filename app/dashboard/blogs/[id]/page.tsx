@@ -23,7 +23,6 @@ import {
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { mockPosts } from "@/lib/data/mock-posts";
 import type { PostStatus } from "@/lib/types";
 
 export default function EditPostPage() {
@@ -33,44 +32,50 @@ export default function EditPostPage() {
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [content, setContent] = useState("");
+  const [summary, setSummary] = useState("");
+  const [body, setBody] = useState("");
+  const [image, setImage] = useState("");
+  const [author, setAuthor] = useState("");
+  const [readTime, setReadTime] = useState<string>("");
   const [status, setStatus] = useState<PostStatus>("draft");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // For now, use mock data. Later replace with actual Supabase query:
-    // const supabase = createClient()
-    // const { data: authData } = await supabase.auth.getUser()
-    // if (!authData.user) {
-    //   router.push('/auth/login')
-    //   return
-    // }
-    //
-    // const { data: post, error: fetchError } = await supabase
-    //   .from('posts')
-    //   .select('*')
-    //   .eq('id', postId)
-    //   .eq('user_id', authData.user.id)
-    //   .single()
-    //
-    // if (fetchError || !post) {
-    //   setError('Post not found')
-    //   setIsLoading(false)
-    //   return
-    // }
+    const loadPost = async () => {
+      const supabase = createClient();
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) {
+        router.push("/auth/login");
+        return;
+      }
 
-    const post = mockPosts.find((p) => p.id === postId);
-    if (post) {
+      const { data: post, error: fetchError } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId)
+        .eq("user_id", authData.user.id)
+        .single();
+
+      if (fetchError || !post) {
+        setError("Post not found");
+        setIsLoading(false);
+        return;
+      }
+
       setTitle(post.title);
       setSlug(post.slug);
-      setContent(post.content || "");
+      setSummary(post.summary || "");
+      setBody(post.body || "");
+      setImage(post.image || "");
+      setAuthor(post.author || "");
+      setReadTime(post.read_time?.toString() || "");
       setStatus(post.status);
-    } else {
-      setError("Post not found");
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    loadPost();
   }, [postId, router]);
 
   const generateSlug = (text: string) => {
@@ -96,30 +101,33 @@ export default function EditPostPage() {
 
     const supabase = createClient();
 
-    // For now, just redirect. Later replace with actual Supabase update:
-    // const { data: authData } = await supabase.auth.getUser()
-    // if (!authData.user) {
-    //   setError('You must be logged in to update a post')
-    //   setIsSubmitting(false)
-    //   return
-    // }
-    //
-    // const { error: updateError } = await supabase
-    //   .from('posts')
-    //   .update({
-    //     title,
-    //     slug,
-    //     content,
-    //     status,
-    //   })
-    //   .eq('id', postId)
-    //   .eq('user_id', authData.user.id)
-    //
-    // if (updateError) {
-    //   setError(updateError.message)
-    //   setIsSubmitting(false)
-    //   return
-    // }
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      setError("You must be logged in to update a post");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from("posts")
+      .update({
+        title,
+        slug,
+        summary: summary || null,
+        body: body || null,
+        image: image || null,
+        author: author || null,
+        read_time: readTime ? parseInt(readTime, 10) : null,
+        status,
+      })
+      .eq("id", postId)
+      .eq("user_id", authData.user.id);
+
+    if (updateError) {
+      setError(updateError.message);
+      setIsSubmitting(false);
+      return;
+    }
 
     router.push("/dashboard/blogs");
   };
@@ -193,13 +201,57 @@ export default function EditPostPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
+              <Label htmlFor="summary">Summary</Label>
               <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                id="summary"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Brief summary of the post..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="body">Body</Label>
+              <Textarea
+                id="body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
                 placeholder="Write your post content here..."
                 rows={10}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                type="url"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="author">Author</Label>
+              <Input
+                id="author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Author name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="read-time">Read Time (minutes)</Label>
+              <Input
+                id="read-time"
+                type="number"
+                min="1"
+                value={readTime}
+                onChange={(e) => setReadTime(e.target.value)}
+                placeholder="5"
               />
             </div>
 

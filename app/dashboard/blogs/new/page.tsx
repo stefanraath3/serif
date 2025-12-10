@@ -29,7 +29,11 @@ export default function NewPostPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [content, setContent] = useState("");
+  const [summary, setSummary] = useState("");
+  const [body, setBody] = useState("");
+  const [image, setImage] = useState("");
+  const [author, setAuthor] = useState("");
+  const [readTime, setReadTime] = useState<string>("");
   const [status, setStatus] = useState<PostStatus>("draft");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,29 +61,30 @@ export default function NewPostPage() {
 
     const supabase = createClient();
 
-    // For now, just redirect. Later replace with actual Supabase insert:
-    // const { data: authData } = await supabase.auth.getUser()
-    // if (!authData.user) {
-    //   setError('You must be logged in to create a post')
-    //   setIsSubmitting(false)
-    //   return
-    // }
-    //
-    // const { error: insertError } = await supabase
-    //   .from('posts')
-    //   .insert({
-    //     user_id: authData.user.id,
-    //     title,
-    //     slug,
-    //     content,
-    //     status,
-    //   })
-    //
-    // if (insertError) {
-    //   setError(insertError.message)
-    //   setIsSubmitting(false)
-    //   return
-    // }
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      setError("You must be logged in to create a post");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const { error: insertError } = await supabase.from("posts").insert({
+      user_id: authData.user.id,
+      title,
+      slug,
+      summary: summary || null,
+      body: body || null,
+      image: image || null,
+      author: author || null,
+      read_time: readTime ? parseInt(readTime, 10) : null,
+      status,
+    });
+
+    if (insertError) {
+      setError(insertError.message);
+      setIsSubmitting(false);
+      return;
+    }
 
     router.push("/dashboard/blogs");
   };
@@ -134,13 +139,57 @@ export default function NewPostPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
+              <Label htmlFor="summary">Summary</Label>
               <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                id="summary"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Brief summary of the post..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="body">Body</Label>
+              <Textarea
+                id="body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
                 placeholder="Write your post content here..."
                 rows={10}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                type="url"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="author">Author</Label>
+              <Input
+                id="author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Author name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="read-time">Read Time (minutes)</Label>
+              <Input
+                id="read-time"
+                type="number"
+                min="1"
+                value={readTime}
+                onChange={(e) => setReadTime(e.target.value)}
+                placeholder="5"
               />
             </div>
 
