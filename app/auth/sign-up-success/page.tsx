@@ -1,30 +1,44 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import Link from "next/link";
+import { Mail } from "lucide-react";
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Thank you for signing up!</CardTitle>
-              <CardDescription>Check your email to confirm</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                You&apos;ve successfully signed up. Please check your email to confirm your account
-                before signing in.
-              </p>
-            </CardContent>
-          </Card>
+    <div className="min-h-svh bg-stone-50 text-stone-900 selection:bg-stone-200">
+      <div className="flex min-h-svh flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <div className="text-center">
+            <Link href="/" className="inline-block mb-8">
+              <span className="font-serif text-2xl font-medium tracking-tight">
+                Serif
+              </span>
+            </Link>
+
+            <div className="mb-6 flex justify-center">
+              <div className="rounded-full bg-stone-100 p-4">
+                <Mail className="h-8 w-8 text-stone-600" />
+              </div>
+            </div>
+
+            <h1 className="font-serif text-4xl font-medium tracking-tight mb-3">
+              Check your email
+            </h1>
+            <p className="text-stone-600 mb-8">
+              We&apos;ve sent you a confirmation link. Please check your inbox
+              to verify your account.
+            </p>
+
+            <p className="text-sm text-stone-500">
+              Didn&apos;t receive an email?{" "}
+              <Link
+                href="/auth/sign-up"
+                className="text-stone-900 font-medium hover:underline underline-offset-4"
+              >
+                Try again
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
