@@ -66,6 +66,7 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
         }),
         Placeholder.configure({
           placeholder,
+          emptyEditorClass: "is-editor-empty",
         }),
       ],
       content,

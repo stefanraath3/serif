@@ -128,4 +128,18 @@
   input[type="reset"] {
     @apply cursor-pointer;
   }
+
+  /* TipTap Placeholder Styling */
+  .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: oklch(0.556 0 0 / 0.5);
+    pointer-events: none;
+    height: 0;
+    font-style: italic;
+  }
+
+  .dark .tiptap p.is-editor-empty:first-child::before {
+    color: oklch(0.708 0 0 / 0.5);
+  }
 }
