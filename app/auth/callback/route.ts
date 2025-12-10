@@ -27,16 +27,24 @@ export async function GET(request: NextRequest) {
         }
 
         // Sync verified user to Loops
-        if (user.email) {
+        if (user.email && process.env.LOOPS_API_KEY) {
           try {
-            await fetch(`${origin}/api/loops`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: user.email,
-                firstName,
-              }),
-            });
+            const loopsResponse = await fetch(
+              "https://app.loops.so/api/v1/contacts/create",
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.LOOPS_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  email: user.email,
+                  ...(firstName && { firstName }),
+                }),
+              }
+            );
+            const loopsData = await loopsResponse.json();
+            console.log("Loops sync result:", loopsResponse.status, loopsData);
           } catch (loopsError) {
             console.error("Failed to sync to Loops:", loopsError);
           }

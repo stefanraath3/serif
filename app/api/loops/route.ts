@@ -8,13 +8,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    if (!firstName || firstName.trim() === "") {
-      return NextResponse.json(
-        { error: "First name is required" },
-        { status: 400 }
-      );
-    }
-
     const loopsApiKey = process.env.LOOPS_API_KEY;
     if (!loopsApiKey) {
       console.error("LOOPS_API_KEY is not set");
@@ -34,7 +27,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           email,
-          firstName,
+          ...(firstName && { firstName }),
         }),
       }
     );
