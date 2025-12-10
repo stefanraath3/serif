@@ -20,17 +20,20 @@ import {
 } from "lucide-react";
 import { uploadImage } from "@/lib/upload";
 import { useRef } from "react";
+import { cn } from "@/lib/utils";
 
 interface TipTapEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  className?: string;
 }
 
 export function TipTapEditor({
   content,
   onChange,
   placeholder = "Write your post content here...",
+  className,
 }: TipTapEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,8 +66,17 @@ export function TipTapEditor({
     },
     editorProps: {
       attributes: {
-        class:
-          "focus:outline-none min-h-[300px] px-4 py-3 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4 [&_li]:mb-1 [&_a]:text-primary [&_a]:underline [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4",
+        class: cn(
+          "focus:outline-none min-h-[300px] prose prose-lg prose-serif max-w-none dark:prose-invert",
+          // Custom Typography overrides for cleaner look
+          "[&_h1]:mt-8 [&_h1]:mb-4",
+          "[&_h2]:mt-8 [&_h2]:mb-4",
+          "[&_p]:mb-4 [&_p]:leading-relaxed",
+          "[&_ul]:list-disc [&_ul]:pl-6",
+          "[&_ol]:list-decimal [&_ol]:pl-6",
+          "[&_img]:rounded-xl [&_img]:my-8",
+          "[&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-6 [&_blockquote]:italic"
+        ),
       },
     },
   });
@@ -116,7 +128,7 @@ export function TipTapEditor({
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className={cn("relative group", className)}>
       <input
         ref={fileInputRef}
         type="file"
@@ -124,105 +136,92 @@ export function TipTapEditor({
         className="hidden"
         onChange={handleFileChange}
       />
-      {/* Top Toolbar */}
-      <div className="flex items-center gap-1 border-b bg-background p-2">
-        <Button
-          type="button"
-          variant={editor.isActive("bold") ? "default" : "ghost"}
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("italic") ? "default" : "ghost"}
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Separator orientation="vertical" className="h-6" />
-        <Button
-          type="button"
-          variant={
-            editor.isActive("heading", { level: 1 }) ? "default" : "ghost"
-          }
-          size="sm"
-          className="h-8 px-2"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
-        >
-          H1
-        </Button>
-        <Button
-          type="button"
-          variant={
-            editor.isActive("heading", { level: 2 }) ? "default" : "ghost"
-          }
-          size="sm"
-          className="h-8 px-2"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-        >
-          H2
-        </Button>
-        <Button
-          type="button"
-          variant={
-            editor.isActive("heading", { level: 3 }) ? "default" : "ghost"
-          }
-          size="sm"
-          className="h-8 px-2"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
-        >
-          H3
-        </Button>
-        <Separator orientation="vertical" className="h-6" />
-        <Button
-          type="button"
-          variant={editor.isActive("bulletList") ? "default" : "ghost"}
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("orderedList") ? "default" : "ghost"}
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <Separator orientation="vertical" className="h-6" />
-        <Button
-          type="button"
-          variant={editor.isActive("link") ? "default" : "ghost"}
-          size="icon"
-          className="h-8 w-8"
-          onClick={setLink}
-        >
-          <LinkIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={handleImageUpload}
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
+
+      {/* Floating Toolbar - appears on selection or hover near top */}
+      <div className="sticky top-20 z-10 mx-auto mb-8 w-fit overflow-hidden rounded-full border bg-background/95 p-1 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+        <div className="flex items-center gap-0.5">
+          <Button
+            type="button"
+            variant={editor.isActive("bold") ? "default" : "ghost"}
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+          >
+            <Bold className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant={editor.isActive("italic") ? "default" : "ghost"}
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="mx-1 h-4" />
+
+          <Button
+            type="button"
+            variant={
+              editor.isActive("heading", { level: 2 }) ? "default" : "ghost"
+            }
+            size="sm"
+            className="h-8 px-2.5 rounded-full font-serif"
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+          >
+            H2
+          </Button>
+          <Button
+            type="button"
+            variant={
+              editor.isActive("heading", { level: 3 }) ? "default" : "ghost"
+            }
+            size="sm"
+            className="h-8 px-2.5 rounded-full font-serif"
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 3 }).run()
+            }
+          >
+            H3
+          </Button>
+
+          <Separator orientation="vertical" className="mx-1 h-4" />
+
+          <Button
+            type="button"
+            variant={editor.isActive("bulletList") ? "default" : "ghost"}
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+
+          <Button
+            type="button"
+            variant={editor.isActive("link") ? "default" : "ghost"}
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={setLink}
+          >
+            <LinkIcon className="h-4 w-4" />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={handleImageUpload}
+          >
+            <ImageIcon className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
       <EditorContent editor={editor} />
     </div>
   );
