@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -43,7 +44,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const { data: post, error } = await supabase
     .from("posts")
-    .select("*")
+    .select(
+      `
+      *,
+      profiles:user_id (
+        first_name,
+        avatar_url
+      )
+    `
+    )
     .eq("slug", slug)
     .eq("status", "published")
     .single();
@@ -51,6 +60,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (error || !post) {
     notFound();
   }
+
+  const profile = post.profiles as {
+    first_name: string | null;
+    avatar_url: string | null;
+  } | null;
+  const authorName = profile?.first_name || post.author || "Anonymous";
+  const authorAvatar = profile?.avatar_url || null;
+  const authorInitials = authorName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <article className="container mx-auto px-4 py-8 max-w-4xl">
@@ -73,7 +95,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <p className="text-xl text-muted-foreground mb-4">{post.summary}</p>
         )}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          {post.author && <span>By {post.author}</span>}
+          <div className="flex items-center gap-2">
+            {authorAvatar && (
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={authorAvatar} alt={authorName} />
+                <AvatarFallback className="text-xs">
+                  {authorInitials}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <span>By {authorName}</span>
+          </div>
           {post.read_time && (
             <>
               <span>•</span>

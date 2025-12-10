@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
+import { uploadAvatar } from "@/lib/upload";
+import { Upload } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -22,8 +24,10 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -37,23 +41,22 @@ export default function SettingsPage() {
 
       setEmail(authData.user.email || "");
 
-      // For now, use mock data. Later replace with actual Supabase query:
-      // const { data: profile, error: fetchError } = await supabase
-      //   .from('profiles')
-      //   .select('*')
-      //   .eq('id', authData.user.id)
-      //   .single()
-      //
-      // if (fetchError && fetchError.code !== 'PGRST116') {
-      //   setError('Failed to load profile')
-      //   setIsLoading(false)
-      //   return
-      // }
-      //
-      // if (profile) {
-      //   setFirstName(profile.first_name || '')
-      //   setAvatarUrl(profile.avatar_url || '')
-      // }
+      const { data: profile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", authData.user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        setError("Failed to load profile");
+        setIsLoading(false);
+        return;
+      }
+
+      if (profile) {
+        setFirstName(profile.first_name || "");
+        setAvatarUrl(profile.avatar_url || "");
+      }
 
       setIsLoading(false);
     };
@@ -76,24 +79,44 @@ export default function SettingsPage() {
       return;
     }
 
-    // For now, just show success. Later replace with actual Supabase update:
-    // const { error: updateError } = await supabase
-    //   .from('profiles')
-    //   .update({
-    //     first_name: firstName || null,
-    //     avatar_url: avatarUrl || null,
-    //   })
-    //   .eq('id', authData.user.id)
-    //
-    // if (updateError) {
-    //   setError(updateError.message)
-    //   setIsSubmitting(false)
-    //   return
-    // }
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        first_name: firstName || null,
+        avatar_url: avatarUrl || null,
+      })
+      .eq("id", authData.user.id);
+
+    if (updateError) {
+      setError(updateError.message);
+      setIsSubmitting(false);
+      return;
+    }
 
     setSuccess(true);
     setIsSubmitting(false);
     router.refresh();
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setError(null);
+    const result = await uploadAvatar(file);
+    setIsUploadingAvatar(false);
+
+    if (result.success) {
+      setAvatarUrl(result.url);
+    } else {
+      setError(result.error);
+    }
   };
 
   const initials = firstName
@@ -130,24 +153,49 @@ export default function SettingsPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex items-center gap-6">
-              <Avatar className="h-20 w-20">
-                <AvatarImage
-                  src={avatarUrl || undefined}
-                  alt={firstName || email}
+              <div className="relative group">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage
+                    src={avatarUrl || undefined}
+                    alt={firstName || email}
+                  />
+                  <AvatarFallback className="text-lg">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  disabled={isUploadingAvatar}
                 />
-                <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-              </Avatar>
+              </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="avatar-url">Avatar URL</Label>
+                <Label htmlFor="avatar-url">Avatar</Label>
                 <Input
                   id="avatar-url"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
                   placeholder="https://example.com/avatar.jpg"
                   type="url"
+                  disabled={isUploadingAvatar}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Enter a URL to your avatar image
+                  {isUploadingAvatar
+                    ? "Uploading..."
+                    : "Upload an image or enter a URL to your avatar"}
                 </p>
               </div>
             </div>

@@ -19,13 +19,26 @@ import { deletePost } from "@/lib/actions/posts";
 
 interface DeletePostButtonProps {
   postId: string;
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
-export function DeletePostButton({ postId }: DeletePostButtonProps) {
+export function DeletePostButton({
+  postId,
+  variant = "ghost",
+}: DeletePostButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     setIsDeleting(true);
     const result = await deletePost(postId);
 
@@ -42,12 +55,18 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={isDeleting}>
+        <Button
+          variant={variant}
+          size="icon"
+          disabled={isDeleting}
+          className="text-muted-foreground hover:text-destructive transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Delete</span>
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -55,8 +74,14 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
