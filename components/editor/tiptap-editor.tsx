@@ -19,7 +19,13 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { uploadImage } from "@/lib/upload";
-import { useRef, forwardRef, useImperativeHandle, useState } from "react";
+import {
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 
 export interface TipTapEditorRef {
@@ -43,10 +49,8 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
     },
     ref
   ) => {
+    const [, forceUpdate] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    // #region agent log - force re-render state
-    const [, forceRender] = useState(0);
-    // #endregion
 
     const editor = useEditor({
       immediatelyRender: false,
@@ -76,33 +80,14 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
       onUpdate: ({ editor }) => {
         onChange(editor.getHTML());
       },
-      // Fix: Force re-render on selection/storedMarks changes for toolbar state
-      onSelectionUpdate: () => {
-        forceRender((n) => n + 1);
-        // #region agent log
-        fetch(
-          "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              location: "tiptap-editor.tsx:onSelectionUpdate",
-              message: "Selection updated - forcing re-render",
-              timestamp: Date.now(),
-              sessionId: "debug-session",
-              runId: "post-fix",
-            }),
-          }
-        ).catch(() => {});
-        // #endregion
-      },
       editorProps: {
         attributes: {
           class: cn(
             "focus:outline-none min-h-[300px] prose prose-lg prose-serif max-w-none dark:prose-invert",
             // Custom Typography overrides for cleaner look
             "[&_h1]:mt-8 [&_h1]:mb-4",
-            "[&_h2]:mt-8 [&_h2]:mb-4",
+            "[&_h2]:mt-8 [&_h2]:mb-4 [&_h2]:text-3xl [&_h2]:font-semibold",
+            "[&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-2xl [&_h3]:font-semibold",
             "[&_p]:mb-4 [&_p]:leading-relaxed",
             "[&_ul]:list-disc [&_ul]:pl-6",
             "[&_ol]:list-decimal [&_ol]:pl-6",
@@ -112,6 +97,44 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
         },
       },
     });
+
+    useEffect(() => {
+      if (!editor) return;
+
+      const triggerRender = () => {
+        forceUpdate((x) => x + 1);
+        // #region agent log
+        fetch(
+          "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "tiptap-editor.tsx:selection-update",
+              message: "Selection/transaction update",
+              data: {
+                isBoldActive: editor.isActive("bold"),
+                isItalicActive: editor.isActive("italic"),
+                isH2Active: editor.isActive("heading", { level: 2 }),
+                isH3Active: editor.isActive("heading", { level: 3 }),
+              },
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              hypothesisId: "H1",
+            }),
+          }
+        ).catch(() => {});
+        // #endregion
+      };
+
+      editor.on("selectionUpdate", triggerRender);
+      editor.on("transaction", triggerRender);
+
+      return () => {
+        editor.off("selectionUpdate", triggerRender);
+        editor.off("transaction", triggerRender);
+      };
+    }, [editor]);
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -169,111 +192,24 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
     if (!editor) {
       return null;
     }
-
     // #region agent log
-    const handleBoldClick = () => {
-      const beforeActive = editor.isActive("bold");
-      const beforeStoredMarks = editor.state.storedMarks;
-      const result = editor.chain().focus().toggleBold().run();
-      const afterActive = editor.isActive("bold");
-      const afterStoredMarks = editor.state.storedMarks;
-      fetch(
-        "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "tiptap-editor.tsx:handleBoldClick",
-            message: "Bold button clicked",
-            data: {
-              beforeActive,
-              afterActive,
-              beforeStoredMarks: beforeStoredMarks?.map((m) => m.type.name),
-              afterStoredMarks: afterStoredMarks?.map((m) => m.type.name),
-              commandResult: result,
-            },
-            timestamp: Date.now(),
-            sessionId: "debug-session",
-            hypothesisId: "A,B",
-          }),
-        }
-      ).catch(() => {});
-    };
-    // #endregion
-
-    // #region agent log
-    const handleItalicClick = () => {
-      const beforeActive = editor.isActive("italic");
-      const beforeStoredMarks = editor.state.storedMarks;
-      const result = editor.chain().focus().toggleItalic().run();
-      const afterActive = editor.isActive("italic");
-      const afterStoredMarks = editor.state.storedMarks;
-      fetch(
-        "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "tiptap-editor.tsx:handleItalicClick",
-            message: "Italic button clicked",
-            data: {
-              beforeActive,
-              afterActive,
-              beforeStoredMarks: beforeStoredMarks?.map((m) => m.type.name),
-              afterStoredMarks: afterStoredMarks?.map((m) => m.type.name),
-              commandResult: result,
-            },
-            timestamp: Date.now(),
-            sessionId: "debug-session",
-            hypothesisId: "A,B",
-          }),
-        }
-      ).catch(() => {});
-    };
-    // #endregion
-
-    // #region agent log
-    const handleHeadingClick = (level: 2 | 3) => {
-      const beforeActive = editor.isActive("heading", { level });
-      const selection = editor.state.selection;
-      const currentNode = selection.$head.parent;
-      const result = editor.chain().focus().toggleHeading({ level }).run();
-      const afterActive = editor.isActive("heading", { level });
-      fetch(
-        "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "tiptap-editor.tsx:handleHeadingClick",
-            message: `Heading ${level} clicked`,
-            data: {
-              level,
-              beforeActive,
-              afterActive,
-              commandResult: result,
-              currentNodeType: currentNode.type.name,
-              selectionEmpty: selection.empty,
-              selectionFrom: selection.from,
-              selectionTo: selection.to,
-            },
-            timestamp: Date.now(),
-            sessionId: "debug-session",
-            hypothesisId: "C,D,E",
-          }),
-        }
-      ).catch(() => {});
-    };
-    // #endregion
-
-    // #region agent log
-    console.log("[DEBUG] Render - isActive states:", {
-      bold: editor.isActive("bold"),
-      italic: editor.isActive("italic"),
-      h2: editor.isActive("heading", { level: 2 }),
-      h3: editor.isActive("heading", { level: 3 }),
-      storedMarks: editor.state.storedMarks?.map((m) => m.type.name),
-    });
+    fetch("http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location: "tiptap-editor.tsx:render",
+        message: "Component rendering",
+        data: {
+          isBoldActive: editor.isActive("bold"),
+          isItalicActive: editor.isActive("italic"),
+          isH2Active: editor.isActive("heading", { level: 2 }),
+          isH3Active: editor.isActive("heading", { level: 3 }),
+        },
+        timestamp: Date.now(),
+        sessionId: "debug-session",
+        hypothesisId: "H1",
+      }),
+    }).catch(() => {});
     // #endregion
 
     return (
@@ -294,7 +230,28 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               variant={editor.isActive("bold") ? "default" : "ghost"}
               size="icon"
               className="h-8 w-8 rounded-full"
-              onClick={handleBoldClick}
+              onClick={() => {
+                // #region agent log
+                const isActiveBefore = editor.isActive("bold");
+                const result = editor.chain().focus().toggleBold().run();
+                const isActiveAfter = editor.isActive("bold");
+                fetch(
+                  "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      location: "tiptap-editor.tsx:bold-click",
+                      message: "Bold button clicked",
+                      data: { isActiveBefore, result, isActiveAfter },
+                      timestamp: Date.now(),
+                      sessionId: "debug-session",
+                      hypothesisId: "H1,H2",
+                    }),
+                  }
+                ).catch(() => {});
+                // #endregion
+              }}
             >
               <Bold className="h-4 w-4" />
             </Button>
@@ -303,7 +260,7 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               variant={editor.isActive("italic") ? "default" : "ghost"}
               size="icon"
               className="h-8 w-8 rounded-full"
-              onClick={handleItalicClick}
+              onClick={() => editor.chain().focus().toggleItalic().run()}
             >
               <Italic className="h-4 w-4" />
             </Button>
@@ -317,7 +274,38 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               }
               size="sm"
               className="h-8 px-2.5 rounded-full font-serif"
-              onClick={() => handleHeadingClick(2)}
+              onClick={() => {
+                // #region agent log
+                const isActiveBefore = editor.isActive("heading", { level: 2 });
+                const result = editor
+                  .chain()
+                  .focus()
+                  .toggleHeading({ level: 2 })
+                  .run();
+                const isActiveAfter = editor.isActive("heading", { level: 2 });
+                const htmlAfter = editor.getHTML();
+                fetch(
+                  "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      location: "tiptap-editor.tsx:h2-click",
+                      message: "H2 button clicked",
+                      data: {
+                        isActiveBefore,
+                        result,
+                        isActiveAfter,
+                        htmlAfter,
+                      },
+                      timestamp: Date.now(),
+                      sessionId: "debug-session",
+                      hypothesisId: "H3,H4",
+                    }),
+                  }
+                ).catch(() => {});
+                // #endregion
+              }}
             >
               H2
             </Button>
@@ -328,7 +316,38 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
               }
               size="sm"
               className="h-8 px-2.5 rounded-full font-serif"
-              onClick={() => handleHeadingClick(3)}
+              onClick={() => {
+                // #region agent log
+                const isActiveBefore = editor.isActive("heading", { level: 3 });
+                const result = editor
+                  .chain()
+                  .focus()
+                  .toggleHeading({ level: 3 })
+                  .run();
+                const isActiveAfter = editor.isActive("heading", { level: 3 });
+                const htmlAfter = editor.getHTML();
+                fetch(
+                  "http://127.0.0.1:7243/ingest/ce75b66a-92eb-4bba-bdcd-9e0d58fc8a1a",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      location: "tiptap-editor.tsx:h3-click",
+                      message: "H3 button clicked",
+                      data: {
+                        isActiveBefore,
+                        result,
+                        isActiveAfter,
+                        htmlAfter,
+                      },
+                      timestamp: Date.now(),
+                      sessionId: "debug-session",
+                      hypothesisId: "H3,H4",
+                    }),
+                  }
+                ).catch(() => {});
+                // #endregion
+              }}
             >
               H3
             </Button>
