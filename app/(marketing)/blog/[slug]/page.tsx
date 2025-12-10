@@ -44,15 +44,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const { data: post, error } = await supabase
     .from("posts")
-    .select(
-      `
-      *,
-      profiles:user_id (
-        first_name,
-        avatar_url
-      )
-    `
-    )
+    .select("*")
     .eq("slug", slug)
     .eq("status", "published")
     .single();
@@ -61,12 +53,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const profile = post.profiles as {
-    first_name: string | null;
-    avatar_url: string | null;
-  } | null;
-  const authorName = profile?.first_name || post.author || "Anonymous";
-  const authorAvatar = profile?.avatar_url || null;
+  const authorName = post.author || "Anonymous";
+  const authorAvatar: string | null = null;
   const authorInitials = authorName
     .split(" ")
     .map((n: string) => n[0])
@@ -82,7 +70,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <article className="container mx-auto px-6 py-16 max-w-4xl">
+      <article className="container mx-auto px-6 pt-32 pb-16 max-w-4xl">
         <header className="mb-12">
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6 text-stone-900">
             {post.title}

@@ -6,22 +6,14 @@ export default async function BlogPage() {
 
   const { data: posts } = await supabase
     .from("posts")
-    .select(
-      `
-      *,
-      profiles:user_id (
-        first_name,
-        avatar_url
-      )
-    `
-    )
+    .select("*")
     .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (!posts || posts.length === 0) {
     return (
       <div className="min-h-screen bg-stone-50">
-        <div className="container mx-auto px-6 py-24 max-w-6xl">
+        <div className="container mx-auto px-6 pt-32 pb-24 max-w-6xl">
           <div className="text-center">
             <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight mb-4 text-stone-900">
               Blog
@@ -37,7 +29,7 @@ export default async function BlogPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <div className="container mx-auto px-6 py-24 max-w-6xl">
+      <div className="container mx-auto px-6 pt-32 pb-24 max-w-6xl">
         <header className="mb-16 text-center">
           <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight mb-4 text-stone-900">
             Blog
@@ -48,29 +40,19 @@ export default async function BlogPage() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => {
-            const profile = post.profiles as {
-              first_name: string | null;
-              avatar_url: string | null;
-            } | null;
-            const authorName =
-              profile?.first_name || post.author || "Anonymous";
-            const authorAvatar = profile?.avatar_url || null;
-
-            return (
-              <BlogCard
-                key={post.id}
-                slug={post.slug}
-                title={post.title}
-                summary={post.summary}
-                image={post.image}
-                authorName={authorName}
-                authorAvatar={authorAvatar}
-                createdAt={post.created_at}
-                readTime={post.read_time}
-              />
-            );
-          })}
+          {posts.map((post) => (
+            <BlogCard
+              key={post.id}
+              slug={post.slug}
+              title={post.title}
+              summary={post.summary}
+              image={post.image}
+              authorName={post.author || "Anonymous"}
+              authorAvatar={null}
+              createdAt={post.created_at}
+              readTime={post.read_time}
+            />
+          ))}
         </div>
       </div>
     </div>
