@@ -1,6 +1,5 @@
 import { AboutNav } from "@/components/about/about-nav";
 import { ManifestoContent } from "@/components/about/manifesto-content";
-import { SiteFooter } from "@/components/site-footer";
 
 export default function About() {
   return (
@@ -14,8 +13,6 @@ export default function About() {
 
         <ManifestoContent />
       </main>
-
-      <SiteFooter />
     </div>
   );
 }
