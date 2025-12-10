@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Home, FileText, Settings, PenTool } from "lucide-react";
+import { Home, Library, Settings } from "lucide-react";
 import { NavUser } from "./nav-user";
 import type { Profile } from "@/lib/types";
 
@@ -27,14 +27,9 @@ const navItems = [
     href: "/dashboard",
   },
   {
-    title: "Drafts",
-    icon: PenTool,
-    href: "/dashboard/blogs?status=draft",
-  },
-  {
-    title: "Published",
-    icon: FileText,
-    href: "/dashboard/blogs?status=published",
+    title: "Stories",
+    icon: Library,
+    href: "/dashboard/blogs",
   },
   {
     title: "Settings",
@@ -64,9 +59,15 @@ export function AppSidebar({ profile, email }: AppSidebarProps) {
         <SidebarMenu>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
+            // Logic to determine active state
+            let isActive = false;
+
+            if (item.href === "/dashboard") {
+              isActive = pathname === "/dashboard";
+            } else {
+              isActive = pathname.startsWith(item.href);
+            }
 
             return (
               <SidebarMenuItem key={item.href}>

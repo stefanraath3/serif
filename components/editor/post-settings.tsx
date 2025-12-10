@@ -111,13 +111,7 @@ export function PostSettings({
 
             <div className="space-y-3">
               <Label className="text-sm font-medium">Cover Image</Label>
-              <div className="rounded-xl overflow-hidden border border-border/50 bg-muted/10">
-                <ImageUpload
-                  value={image}
-                  onChange={setImage}
-                  label="Cover Image"
-                />
-              </div>
+              <ImageUpload value={image} onChange={setImage} hideLabel />
             </div>
           </div>
 

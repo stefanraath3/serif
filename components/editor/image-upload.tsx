@@ -12,12 +12,14 @@ interface ImageUploadProps {
   value: string;
   onChange: (url: string) => void;
   label?: string;
+  hideLabel?: boolean;
 }
 
 export function ImageUpload({
   value,
   onChange,
   label = "Image",
+  hideLabel = false,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -80,7 +82,7 @@ export function ImageUpload({
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      {!hideLabel && <Label>{label}</Label>}
       {value ? (
         <div className="relative group">
           <div className="relative w-3/5 mx-auto aspect-video rounded-lg overflow-hidden border">
@@ -124,7 +126,7 @@ export function ImageUpload({
           onDragOver={handleDrag}
           onDrop={handleDrop}
           className={`
-            border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+            border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
             transition-colors
             ${
               dragActive
@@ -147,11 +149,11 @@ export function ImageUpload({
             className="hidden"
             disabled={isUploading}
           />
-          <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm font-medium mb-2">
+          <ImageIcon className="h-10 w-10 mx-auto mb-4 text-muted-foreground/50" />
+          <p className="text-sm font-medium mb-1 text-muted-foreground">
             {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground/60">
             PNG, JPG, GIF up to 5MB
           </p>
         </div>
@@ -162,7 +164,7 @@ export function ImageUpload({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Or enter image URL"
-          className="text-sm"
+          className="text-sm bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
         />
       )}
     </div>
