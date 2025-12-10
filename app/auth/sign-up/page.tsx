@@ -1,4 +1,5 @@
 import { SignUpForm } from "@/components/sign-up-form";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Page() {
@@ -41,7 +42,13 @@ export default function Page() {
                   "Writing is the painting of the voice."
                 </blockquote>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-stone-200" />
+                  <Image
+                    src="/auth-images/voltaire.png"
+                    alt="Voltaire"
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
                   <div>
                     <p className="font-medium text-stone-900">Voltaire</p>
                     <p className="text-sm text-stone-500">

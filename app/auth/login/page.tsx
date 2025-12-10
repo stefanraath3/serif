@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/login-form";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Page() {
@@ -42,7 +43,13 @@ export default function Page() {
                   typewriter and bleed."
                 </blockquote>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-stone-200" />
+                  <Image
+                    src="/auth-images/hemingway.jpg"
+                    alt="Ernest Hemingway"
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
                   <div>
                     <p className="font-medium text-stone-900">
                       Ernest Hemingway
