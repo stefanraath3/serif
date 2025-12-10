@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 export function SiteHeader() {
   return (
     <nav className="fixed w-full z-50 top-0 left-0 border-b border-stone-100 bg-stone-50/80 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
+        {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <Image
             src="/logo.svg"
@@ -18,6 +19,30 @@ export function SiteHeader() {
             Serif.
           </span>
         </Link>
+
+        {/* Center: Navigation Links */}
+        <div className="flex-1 flex items-center justify-center gap-8">
+          <Link
+            href="/#pricing"
+            className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/about"
+            className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+          >
+            Manifesto
+          </Link>
+          <Link
+            href="/blog"
+            className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+          >
+            Blog
+          </Link>
+        </div>
+
+        {/* Right: Auth Buttons */}
         <div className="flex items-center gap-6">
           <Link
             href="/auth/login"
