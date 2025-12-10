@@ -1,4 +1,4 @@
-export type PostStatus = "draft" | "published";
+export type PostStatus = "draft" | "published" | "scheduled";
 
 export interface Post {
   id: string;
@@ -11,6 +11,7 @@ export interface Post {
   author: string | null;
   read_time: number | null;
   status: PostStatus;
+  scheduled_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,7 +30,7 @@ export interface PostFormData {
   summary: string;
   body: string;
   image: string;
-  author: string;
   read_time: number | null;
   status: PostStatus;
+  scheduled_at: string | null;
 }

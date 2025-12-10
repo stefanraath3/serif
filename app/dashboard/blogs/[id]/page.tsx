@@ -23,7 +23,10 @@ import {
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { updatePost } from "@/lib/actions/posts";
 import type { PostStatus } from "@/lib/types";
+import { TipTapEditor } from "@/components/editor/tiptap-editor";
+import { ImageUpload } from "@/components/editor/image-upload";
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -35,9 +38,9 @@ export default function EditPostPage() {
   const [summary, setSummary] = useState("");
   const [body, setBody] = useState("");
   const [image, setImage] = useState("");
-  const [author, setAuthor] = useState("");
   const [readTime, setReadTime] = useState<string>("");
   const [status, setStatus] = useState<PostStatus>("draft");
+  const [scheduledAt, setScheduledAt] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,9 +72,13 @@ export default function EditPostPage() {
       setSummary(post.summary || "");
       setBody(post.body || "");
       setImage(post.image || "");
-      setAuthor(post.author || "");
       setReadTime(post.read_time?.toString() || "");
       setStatus(post.status);
+      setScheduledAt(
+        post.scheduled_at
+          ? new Date(post.scheduled_at).toISOString().slice(0, 16)
+          : ""
+      );
       setIsLoading(false);
     };
 
@@ -99,32 +106,19 @@ export default function EditPostPage() {
     setIsSubmitting(true);
     setError(null);
 
-    const supabase = createClient();
+    const result = await updatePost(postId, {
+      title,
+      slug,
+      summary,
+      body,
+      image,
+      read_time: readTime ? parseInt(readTime, 10) : null,
+      status,
+      scheduled_at: scheduledAt || null,
+    });
 
-    const { data: authData } = await supabase.auth.getUser();
-    if (!authData.user) {
-      setError("You must be logged in to update a post");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { error: updateError } = await supabase
-      .from("posts")
-      .update({
-        title,
-        slug,
-        summary: summary || null,
-        body: body || null,
-        image: image || null,
-        author: author || null,
-        read_time: readTime ? parseInt(readTime, 10) : null,
-        status,
-      })
-      .eq("id", postId)
-      .eq("user_id", authData.user.id);
-
-    if (updateError) {
-      setError(updateError.message);
+    if (!result.success) {
+      setError(result.error);
       setIsSubmitting(false);
       return;
     }
@@ -175,8 +169,9 @@ export default function EditPostPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 1. Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
                 value={title}
@@ -200,6 +195,7 @@ export default function EditPostPage() {
               </p>
             </div>
 
+            {/* 2. Summary */}
             <div className="space-y-2">
               <Label htmlFor="summary">Summary</Label>
               <Textarea
@@ -211,35 +207,20 @@ export default function EditPostPage() {
               />
             </div>
 
+            {/* 3. Cover Image */}
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              label="Cover Image"
+            />
+
+            {/* 4. Content */}
             <div className="space-y-2">
-              <Label htmlFor="body">Body</Label>
-              <Textarea
-                id="body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
+              <Label htmlFor="body">Content *</Label>
+              <TipTapEditor
+                content={body}
+                onChange={setBody}
                 placeholder="Write your post content here..."
-                rows={10}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="image">Image URL</Label>
-              <Input
-                id="image"
-                type="url"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="author">Author</Label>
-              <Input
-                id="author"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Author name"
               />
             </div>
 
@@ -259,7 +240,12 @@ export default function EditPostPage() {
               <Label htmlFor="status">Status</Label>
               <Select
                 value={status}
-                onValueChange={(value) => setStatus(value as PostStatus)}
+                onValueChange={(value) => {
+                  setStatus(value as PostStatus);
+                  if (value !== "scheduled") {
+                    setScheduledAt("");
+                  }
+                }}
               >
                 <SelectTrigger id="status">
                   <SelectValue />
@@ -267,9 +253,26 @@ export default function EditPostPage() {
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {status === "scheduled" && (
+              <div className="space-y-2">
+                <Label htmlFor="scheduled-at">Scheduled Date & Time</Label>
+                <Input
+                  id="scheduled-at"
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  required={status === "scheduled"}
+                />
+                <p className="text-sm text-muted-foreground">
+                  When should this post be published?
+                </p>
+              </div>
+            )}
 
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">

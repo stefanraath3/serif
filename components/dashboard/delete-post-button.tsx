@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { deletePost } from "@/lib/actions/posts";
 
 interface DeletePostButtonProps {
   postId: string;
@@ -27,12 +27,10 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    const supabase = createClient();
+    const result = await deletePost(postId);
 
-    const { error } = await supabase.from("posts").delete().eq("id", postId);
-
-    if (error) {
-      console.error("Error deleting post:", error);
+    if (!result.success) {
+      console.error("Error deleting post:", result.error);
       setIsDeleting(false);
       return;
     }

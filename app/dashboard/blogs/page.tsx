@@ -78,7 +78,11 @@ export default async function BlogsPage() {
                   <TableCell>
                     <Badge
                       variant={
-                        post.status === "published" ? "default" : "secondary"
+                        post.status === "published"
+                          ? "default"
+                          : post.status === "scheduled"
+                          ? "outline"
+                          : "secondary"
                       }
                     >
                       {post.status}

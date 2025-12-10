@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createPost } from "@/lib/actions/posts";
 import type { PostStatus } from "@/lib/types";
+import { TipTapEditor } from "@/components/editor/tiptap-editor";
+import { ImageUpload } from "@/components/editor/image-upload";
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -32,9 +34,9 @@ export default function NewPostPage() {
   const [summary, setSummary] = useState("");
   const [body, setBody] = useState("");
   const [image, setImage] = useState("");
-  const [author, setAuthor] = useState("");
   const [readTime, setReadTime] = useState<string>("");
   const [status, setStatus] = useState<PostStatus>("draft");
+  const [scheduledAt, setScheduledAt] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,29 +61,19 @@ export default function NewPostPage() {
     setIsSubmitting(true);
     setError(null);
 
-    const supabase = createClient();
-
-    const { data: authData } = await supabase.auth.getUser();
-    if (!authData.user) {
-      setError("You must be logged in to create a post");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("posts").insert({
-      user_id: authData.user.id,
+    const result = await createPost({
       title,
       slug,
-      summary: summary || null,
-      body: body || null,
-      image: image || null,
-      author: author || null,
+      summary,
+      body,
+      image,
       read_time: readTime ? parseInt(readTime, 10) : null,
       status,
+      scheduled_at: scheduledAt || null,
     });
 
-    if (insertError) {
-      setError(insertError.message);
+    if (!result.success) {
+      setError(result.error);
       setIsSubmitting(false);
       return;
     }
@@ -113,8 +105,9 @@ export default function NewPostPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 1. Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
                 value={title}
@@ -138,6 +131,7 @@ export default function NewPostPage() {
               </p>
             </div>
 
+            {/* 2. Summary */}
             <div className="space-y-2">
               <Label htmlFor="summary">Summary</Label>
               <Textarea
@@ -149,38 +143,24 @@ export default function NewPostPage() {
               />
             </div>
 
+            {/* 3. Cover Image */}
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              label="Cover Image"
+            />
+
+            {/* 4. Content */}
             <div className="space-y-2">
-              <Label htmlFor="body">Body</Label>
-              <Textarea
-                id="body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
+              <Label htmlFor="body">Content *</Label>
+              <TipTapEditor
+                content={body}
+                onChange={setBody}
                 placeholder="Write your post content here..."
-                rows={10}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="image">Image URL</Label>
-              <Input
-                id="image"
-                type="url"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="author">Author</Label>
-              <Input
-                id="author"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Author name"
-              />
-            </div>
-
+            {/* Additional fields */}
             <div className="space-y-2">
               <Label htmlFor="read-time">Read Time (minutes)</Label>
               <Input
@@ -197,7 +177,12 @@ export default function NewPostPage() {
               <Label htmlFor="status">Status</Label>
               <Select
                 value={status}
-                onValueChange={(value) => setStatus(value as PostStatus)}
+                onValueChange={(value) => {
+                  setStatus(value as PostStatus);
+                  if (value !== "scheduled") {
+                    setScheduledAt("");
+                  }
+                }}
               >
                 <SelectTrigger id="status">
                   <SelectValue />
@@ -205,9 +190,26 @@ export default function NewPostPage() {
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {status === "scheduled" && (
+              <div className="space-y-2">
+                <Label htmlFor="scheduled-at">Scheduled Date & Time</Label>
+                <Input
+                  id="scheduled-at"
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  required={status === "scheduled"}
+                />
+                <p className="text-sm text-muted-foreground">
+                  When should this post be published?
+                </p>
+              </div>
+            )}
 
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
