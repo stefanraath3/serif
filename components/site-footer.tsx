@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="border-t border-stone-100 py-12 bg-white">
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         <p className="text-stone-500 text-sm">
-          © 2024 Serif Inc. All rights reserved.
+          © 2025 Serif Inc. All rights reserved.
         </p>
         <div className="flex gap-8">
           <Link

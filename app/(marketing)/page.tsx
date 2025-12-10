@@ -29,7 +29,7 @@ export default function Home() {
           {/* Right Column - Technical Details & CTA */}
           <div className="md:col-span-4 flex flex-col justify-between pb-12 md:items-end md:text-right">
             <div className="hidden md:block space-y-2 font-mono text-xs uppercase tracking-widest text-stone-400 animate-in slide-in-from-right-10 fade-in duration-1000 delay-300">
-              <p>Est. 2024</p>
+              <p>Est. 2025</p>
               <p>San Francisco, CA</p>
               <p>Ver. 1.0.0</p>
             </div>
