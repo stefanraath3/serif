@@ -43,7 +43,7 @@ export function DeletePostButton({
     const result = await deletePost(postId);
 
     if (!result.success) {
-      console.error("Error deleting post:", result.error);
+      // Silently fail - error already handled by deletePost action
       setIsDeleting(false);
       return;
     }

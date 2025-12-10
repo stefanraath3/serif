@@ -1,5 +1,15 @@
 import { createClient } from "@/lib/supabase/client";
 
+/**
+ * Storage bucket folder structure:
+ * - post-images bucket: {user_id}/{filename}
+ * - avatars bucket: {user_id}/{filename}
+ *
+ * RLS policies depend on this structure to enforce that users can only
+ * upload to their own folder. The policies use storage.foldername(name)[1]
+ * to extract the user_id from the path.
+ */
+
 type UploadResult =
   | { success: true; url: string; path: string }
   | { success: false; error: string };
@@ -11,6 +21,9 @@ export async function uploadImage(file: File): Promise<UploadResult> {
   if (!authData.user) {
     return { success: false, error: "You must be logged in to upload images" };
   }
+
+  // Security note: Server-side RLS policies enforce that users can only
+  // upload to their own folder ({user_id}/). Client-side auth check is for UX.
 
   // Validate file type
   if (!file.type.startsWith("image/")) {
@@ -57,6 +70,9 @@ export async function uploadAvatar(file: File): Promise<UploadResult> {
   if (!authData.user) {
     return { success: false, error: "You must be logged in to upload avatars" };
   }
+
+  // Security note: Server-side RLS policies enforce that users can only
+  // upload to their own folder ({user_id}/). Client-side auth check is for UX.
 
   // Validate file type
   if (!file.type.startsWith("image/")) {

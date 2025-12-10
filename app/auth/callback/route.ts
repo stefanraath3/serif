@@ -5,6 +5,8 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/protected";
+  const safeNext =
+    next.startsWith("/") && !next.startsWith("//") ? next : "/protected";
 
   if (code) {
     const supabase = await createClient();
@@ -20,10 +22,11 @@ export async function GET(request: NextRequest) {
 
         // Update profile with firstName
         if (firstName) {
-          await supabase
+          const { error: updateError } = await supabase
             .from("profiles")
             .update({ first_name: firstName })
             .eq("id", user.id);
+          // Silently continue - non-critical operation
         }
 
         // Sync verified user to Loops
@@ -43,15 +46,14 @@ export async function GET(request: NextRequest) {
                 }),
               }
             );
-            const loopsData = await loopsResponse.json();
-            console.log("Loops sync result:", loopsResponse.status, loopsData);
+            await loopsResponse.json();
           } catch (loopsError) {
-            console.error("Failed to sync to Loops:", loopsError);
+            // Silently fail - non-critical operation
           }
         }
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      return NextResponse.redirect(`${origin}${safeNext}`);
     }
   }
 

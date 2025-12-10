@@ -9,6 +9,15 @@ export default async function Page({
 }) {
   const params = await searchParams;
 
+  const errorMessages: Record<string, string> = {
+    auth_callback_error: "Authentication failed. Please try again.",
+    default: "An unexpected error occurred.",
+  };
+  const displayError =
+    params?.error && errorMessages[params.error]
+      ? errorMessages[params.error]
+      : errorMessages.default;
+
   return (
     <div className="min-h-svh bg-stone-50 text-stone-900 selection:bg-stone-200">
       <div className="flex min-h-svh flex-col items-center justify-center px-6 py-12">
@@ -32,11 +41,7 @@ export default async function Page({
             <p className="text-stone-600 mb-2">
               We couldn&apos;t complete your request.
             </p>
-            {params?.error && (
-              <p className="text-sm text-stone-500 mb-8">
-                Error: {params.error}
-              </p>
-            )}
+            <p className="text-sm text-stone-500 mb-8">{displayError}</p>
 
             <Link href="/auth/login">
               <Button className="h-11 px-8 rounded-full bg-stone-900 text-stone-50 hover:bg-stone-800">
